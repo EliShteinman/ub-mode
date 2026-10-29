@@ -108,7 +108,7 @@ Before the first tool run in a project, make sure its root has a `.venv` the too
 
 1. No `.venv` and no `venv`: create one with `python3 -m venv .venv` (Windows: `py -3 -m venv .venv`).
 2. Install the project's own dependencies into it (`pip install -e .` for a `pyproject.toml`, or `pip install -r requirements.txt`).
-3. Install `pytest` and `coverage` into it.
+3. Install `pytest` and `coverage` into it from the bundled wheels: `pip install --no-index --find-links <skill-dir>/vendor/wheels pytest coverage`.
 4. Use `.venv/bin/python -m pip` (Windows: `.venv/Scripts/python.exe -m pip`). If that venv has no pip (made by `uv`), use `uv pip install --python .venv` instead.
 5. Add `.venv/`, `.metrics/` and `target/` to the project's `.gitignore` if they are missing.
 
