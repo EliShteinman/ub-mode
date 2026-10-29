@@ -6,15 +6,51 @@
 2. **Then Make it Right** — Fix Root Causes, Sequence Work into Verifiable Units, Test Behavior (Not Implementation), [Crapper](https://github.com/unclebob/crapper) (`CRAP < 10`), [Dryer](https://github.com/unclebob/dryer) (duplication `< 0.8`), [Mutator](https://github.com/unclebob/mutator) (cover the uncovered, kill the survivors, delete dead code), and Refactoring.
 3. **Practice** — Keep a Log, Guard the Context Window, Worktree Cleanup, and Commit and Push in small ordered commits.
 
-## Companion Tool Repositories
+## Bundled Tools
 
-`ub-mode` relies on deterministic quality-gate tools to enforce structure, complexity, duplication, and test thoroughness:
+`tools/` holds vendored copies (via `git subtree`) of the quality-gate tools, with Windows fixes:
 
-- [unclebob/crapper](https://github.com/unclebob/crapper) — Computes cyclomatic complexity, test coverage, and CRAP score per function so every function stays under the CRAP threshold (`< 10`).
-- [unclebob/dryer](https://github.com/unclebob/dryer) — Detects structural code duplication so duplicate blocks (`>= 0.8` similarity) are eliminated.
-- [unclebob/mutator](https://github.com/unclebob/mutator) — Runs mutation testing to expose uncovered code and surviving mutants that tests fail to catch.
-- [unclebob/uml-viewer](https://github.com/unclebob/uml-viewer) — Visualizes components, coverage, CRAP, mutation scores, and dependency directions.
+- `tools/crapper` from [unclebob/crapper](https://github.com/unclebob/crapper) — cyclomatic complexity, coverage, and CRAP score per function (`< 10`).
+- `tools/dryer` from [unclebob/dryer](https://github.com/unclebob/dryer) — structural duplication (`>= 0.8` similarity).
+- `tools/mutator` from [unclebob/mutator](https://github.com/unclebob/mutator) — mutation testing.
+
+## Requirements
+
+- git
+- Python 3.11+
+- Windows only: Developer Mode on (mutator creates symlinks)
 
 ## Installation
 
-Copy `SKILL.md` into your agent's skills directory as `ub-mode/SKILL.md` (for example `~/.grok/skills/ub-mode/SKILL.md`, `~/.claude/skills/ub-mode/SKILL.md`, or `~/.cursor/skills/ub-mode/SKILL.md`), then invoke `/ub-mode`.
+Linux / macOS:
+
+```bash
+git clone <your-gitlab-url>/ub-mode.git /tmp/ub-mode
+bash /tmp/ub-mode/install.sh <your-gitlab-url>/ub-mode.git
+```
+
+Windows (PowerShell):
+
+```powershell
+git clone <your-gitlab-url>/ub-mode.git $env:TEMP\ub-mode
+powershell -ExecutionPolicy Bypass -File $env:TEMP\ub-mode\install.ps1 <your-gitlab-url>/ub-mode.git
+```
+
+The installer clones into `~/.claude/skills/ub-mode`, creates `.venv` there, and installs the three tools.
+Set `UB_MODE_DIR` to install somewhere else. Run the installer again to update.
+
+## Usage
+
+In a Python project with a `.venv` that has `pytest` and `coverage`:
+
+```
+/ub-mode <your request>
+```
+
+## Updating the Bundled Tools
+
+```bash
+git subtree pull --prefix tools/crapper https://github.com/unclebob/crapper.git master --squash
+git subtree pull --prefix tools/dryer https://github.com/unclebob/dryer.git master --squash
+git subtree pull --prefix tools/mutator https://github.com/unclebob/mutator.git main --squash
+```
