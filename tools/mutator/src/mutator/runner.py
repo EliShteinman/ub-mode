@@ -158,9 +158,10 @@ def _project_interpreter(directory: Path) -> str:
     """
 
     for name in (".venv", "venv"):
-        candidate = (directory / name / "bin" / "python").absolute()
-        if candidate.is_file() and os.access(candidate, os.X_OK):
-            return str(candidate)
+        for binary in (Path("bin") / "python", Path("Scripts") / "python.exe"):
+            candidate = (directory / name / binary).absolute()
+            if candidate.is_file() and os.access(candidate, os.X_OK):
+                return str(candidate)
     return sys.executable
 
 
