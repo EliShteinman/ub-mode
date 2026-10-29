@@ -100,6 +100,8 @@ Run the tools from the project root.
 | dryer | `<skill-dir>/.venv/bin/dryer` | `<skill-dir>/.venv/Scripts/dryer.exe` |
 | mutator | `<skill-dir>/.venv/bin/mutator` | `<skill-dir>/.venv/Scripts/mutator.exe` |
 
+If a tool is missing, tell the user to rerun `install.sh` or `install.ps1` from `<skill-dir>`.
+
 ### Prepare the Project (do this yourself, never ask the user)
 
 Before the first tool run in a project, make sure its root has a `.venv` the tools can use:
@@ -109,7 +111,6 @@ Before the first tool run in a project, make sure its root has a `.venv` the too
 3. Install `pytest` and `coverage` into it.
 4. Use `.venv/bin/python -m pip` (Windows: `.venv/Scripts/python.exe -m pip`). If that venv has no pip (made by `uv`), use `uv pip install --python .venv` instead.
 5. Add `.venv/`, `.metrics/` and `target/` to the project's `.gitignore` if they are missing.
-* If a tool is missing, tell the user to rerun `install.sh` or `install.ps1` from `<skill-dir>`.
 
 ## Fix Root Causes
 
