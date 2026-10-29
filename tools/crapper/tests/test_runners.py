@@ -200,6 +200,13 @@ def test_python_executable_prefers_a_project_venv(tmp_path):
     assert _python_executable(tmp_path) == str(binary)
 
 
+def test_python_executable_finds_a_windows_project_venv(tmp_path):
+    binary = tmp_path / ".venv" / "Scripts" / "python.exe"
+    binary.parent.mkdir(parents=True)
+    binary.write_text("", encoding="utf-8")
+    assert _python_executable(tmp_path) == str(binary)
+
+
 def test_rust_kind_installs_llvm_cov_when_it_is_missing(monkeypatch):
     installed = {"llvm": False}
 
