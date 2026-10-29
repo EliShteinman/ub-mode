@@ -92,7 +92,7 @@ Every time you are asked to make a change follow:
 ## Quality Tools
 
 `<skill-dir>` is the directory that holds this SKILL.md (default `~/.claude/skills/ub-mode`).
-Run the tools from the project root. They write to `.metrics/` and `target/`; keep both in the project's `.gitignore`.
+Run the tools from the project root.
 
 | Tool | Linux / macOS | Windows |
 | --- | --- | --- |
@@ -100,7 +100,15 @@ Run the tools from the project root. They write to `.metrics/` and `target/`; ke
 | dryer | `<skill-dir>/.venv/bin/dryer` | `<skill-dir>/.venv/Scripts/dryer.exe` |
 | mutator | `<skill-dir>/.venv/bin/mutator` | `<skill-dir>/.venv/Scripts/mutator.exe` |
 
-* The project needs its own `.venv` (or `venv`) with `pytest` and `coverage` installed.
+### Prepare the Project (do this yourself, never ask the user)
+
+Before the first tool run in a project, make sure its root has a `.venv` the tools can use:
+
+1. No `.venv` and no `venv`: create one with `python3 -m venv .venv` (Windows: `py -3 -m venv .venv`).
+2. Install the project's own dependencies into it (`pip install -e .` for a `pyproject.toml`, or `pip install -r requirements.txt`).
+3. Install `pytest` and `coverage` into it.
+4. Use `.venv/bin/python -m pip` (Windows: `.venv/Scripts/python.exe -m pip`). If that venv has no pip (made by `uv`), use `uv pip install --python .venv` instead.
+5. Add `.venv/`, `.metrics/` and `target/` to the project's `.gitignore` if they are missing.
 * If a tool is missing, tell the user to rerun `install.sh` or `install.ps1` from `<skill-dir>`.
 
 ## Fix Root Causes
