@@ -39,6 +39,26 @@ powershell -ExecutionPolicy Bypass -File $env:TEMP\ub-mode\install.ps1 <your-git
 The installer clones into `~/.claude/skills/ub-mode`, creates `.venv` there, and installs the three tools.
 Set `UB_MODE_DIR` to install somewhere else. Run the installer again to update.
 
+## Closed Network (Artifactory)
+
+Two things come from outside the GitLab repo. Mirror both once:
+
+1. **PyPI packages** — every package in `requirements.lock`. Point pip at the mirror:
+   `PIP_INDEX_URL=https://<artifactory>/api/pypi/<pypi-remote>/simple`
+2. **tree-sitter parsers** — `tree-sitter-language-pack` downloads its grammars from GitHub on first use.
+   On a machine with internet, after installing:
+
+   ```bash
+   ~/.claude/skills/ub-mode/.venv/bin/python scripts/mirror_parsers.py https://<artifactory>/<generic-repo>/ub-mode-parsers
+   ```
+
+   Upload the files in `parser-mirror/` to that URL, then set
+   `TREE_SITTER_LANGUAGE_PACK_MANIFEST_URL=https://<artifactory>/<generic-repo>/ub-mode-parsers/manifest.json`.
+   Default platforms are `linux-x86_64` and `windows-x86_64`; add `--platform macos-arm64` etc. as needed.
+
+Set both variables before running the installer. The installer downloads the parsers once; the tools never reach the network afterwards.
+If Python reports `CERTIFICATE_VERIFY_FAILED`, set `SSL_CERT_FILE` to the company CA bundle.
+
 ## Usage
 
 In a Python project with a `.venv` that has `pytest` and `coverage`:
