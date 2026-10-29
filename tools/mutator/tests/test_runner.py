@@ -1,5 +1,8 @@
 import sys
 
+import pytest
+
+from mutator import runner
 from mutator.runner import CommandRunner, _clojure_command, _python_command, nearest
 from mutator.runner import test_plan as plan_command
 
@@ -161,3 +164,18 @@ def test_a_worker_overlay_is_imported_ahead_of_the_environment(tmp_path):
     result = CommandRunner().run(command, worker, 5)
     assert result.code == 0
     assert result.output.strip() == "worker"
+
+
+def test_kill_tree_uses_taskkill_on_windows(monkeypatch):
+    calls = []
+    monkeypatch.setattr(runner.subprocess, "run", lambda argv, **_: calls.append(argv))
+    runner._kill_tree(1234, windows=True)
+    assert calls == [["taskkill", "/F", "/T", "/PID", "1234"]]
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="POSIX process groups")
+def test_kill_tree_kills_the_process_group_elsewhere(monkeypatch):
+    calls = []
+    monkeypatch.setattr(runner.os, "killpg", lambda pid, sig: calls.append((pid, sig)))
+    runner._kill_tree(1234, windows=False)
+    assert calls == [(1234, runner.signal.SIGKILL)]
