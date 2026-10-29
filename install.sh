@@ -2,6 +2,8 @@
 # Usage: ./install.sh <git-url-of-ub-mode>
 #        ./install.sh                      (rerun: updates an existing install)
 # Env:   UB_MODE_DIR  install location, default ~/.claude/skills/ub-mode
+#        PIP_INDEX_URL                           internal PyPI mirror (Artifactory)
+#        TREE_SITTER_LANGUAGE_PACK_MANIFEST_URL  internal parser mirror (scripts/mirror_parsers.py)
 set -euo pipefail
 
 REPO_URL="${1:-}"
@@ -51,11 +53,20 @@ install_tools() {
   local python="$1" venv="$SKILL_DIR/.venv" tool
   step "Creating virtualenv with $("$python" --version)"
   [ -x "$venv/bin/python" ] || "$python" -m venv "$venv"
-  "$venv/bin/python" -m pip install --quiet --upgrade pip
+  step "Installing pinned packages from requirements.lock"
+  "$venv/bin/python" -m pip install --quiet -r "$SKILL_DIR/requirements.lock"
   local editable=()
   for tool in "${TOOLS[@]}"; do editable+=(-e "$SKILL_DIR/tools/$tool"); done
   step "Installing ${TOOLS[*]}"
-  "$venv/bin/python" -m pip install --quiet "${editable[@]}"
+  "$venv/bin/python" -m pip install --quiet --no-deps --no-build-isolation "${editable[@]}"
+}
+
+prefetch_parsers() {
+  step "Downloading tree-sitter parsers"
+  "$SKILL_DIR/.venv/bin/python" -c \
+    'import sys; from tree_sitter_language_pack import download; download(open(sys.argv[1]).read().split())' \
+    "$SKILL_DIR/parser-languages.txt" ||
+    fail "Parser download failed. On a closed network set TREE_SITTER_LANGUAGE_PACK_MANIFEST_URL."
 }
 
 verify_tools() {
@@ -72,6 +83,7 @@ main() {
   python="$(find_python)"
   sync_repo
   install_tools "$python"
+  prefetch_parsers
   verify_tools
   echo
   echo "ub-mode is installed in $SKILL_DIR"

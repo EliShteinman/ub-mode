@@ -1,6 +1,8 @@
 # Usage: .\install.ps1 <git-url-of-ub-mode>
 #        .\install.ps1                      (rerun: updates an existing install)
 # Env:   UB_MODE_DIR  install location, default %USERPROFILE%\.claude\skills\ub-mode
+#        PIP_INDEX_URL                           internal PyPI mirror (Artifactory)
+#        TREE_SITTER_LANGUAGE_PACK_MANIFEST_URL  internal parser mirror (scripts/mirror_parsers.py)
 param([string]$RepoUrl = "")
 
 $ErrorActionPreference = "Stop"
@@ -60,10 +62,21 @@ function Install-Tools($Python) {
         $prefix = @($Python | Select-Object -Skip 1)
         Invoke-Checked $Python[0] ($prefix + @("-m", "venv", (Join-Path $SkillDir ".venv")))
     }
-    Invoke-Checked $venvPython @("-m", "pip", "install", "--quiet", "--upgrade", "pip")
+    Step "Installing pinned packages from requirements.lock"
+    Invoke-Checked $venvPython @("-m", "pip", "install", "--quiet", "-r", (Join-Path $SkillDir "requirements.lock"))
     $editable = foreach ($tool in $Tools) { "-e"; (Join-Path $SkillDir "tools\$tool") }
     Step "Installing $($Tools -join ', ')"
-    Invoke-Checked $venvPython (@("-m", "pip", "install", "--quiet") + $editable)
+    Invoke-Checked $venvPython (@("-m", "pip", "install", "--quiet", "--no-deps", "--no-build-isolation") + $editable)
+}
+
+function Get-Parsers {
+    Step "Downloading tree-sitter parsers"
+    $venvPython = Join-Path $SkillDir ".venv\Scripts\python.exe"
+    $script = "import sys; from tree_sitter_language_pack import download; download(open(sys.argv[1]).read().split())"
+    & $venvPython -c $script (Join-Path $SkillDir "parser-languages.txt")
+    if ($LASTEXITCODE -ne 0) {
+        Fail "Parser download failed. On a closed network set TREE_SITTER_LANGUAGE_PACK_MANIFEST_URL."
+    }
 }
 
 function Test-Tools {
@@ -89,6 +102,7 @@ Assert-Git
 $python = Find-Python
 Sync-Repo
 Install-Tools $python
+Get-Parsers
 Test-Tools
 Test-Symlinks
 Write-Host ""
