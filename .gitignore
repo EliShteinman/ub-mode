@@ -1,0 +1,6 @@
+.venv/
+.idea/
+.metrics/
+target/
+__pycache__/
+*.egg-info/
