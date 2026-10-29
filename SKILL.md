@@ -89,6 +89,20 @@ Every time you are asked to make a change follow:
 
 # Then Make it Right
 
+## Quality Tools
+
+`<skill-dir>` is the directory that holds this SKILL.md (default `~/.claude/skills/ub-mode`).
+Run the tools from the project root. They write to `.metrics/` and `target/`; keep both in the project's `.gitignore`.
+
+| Tool | Linux / macOS | Windows |
+| --- | --- | --- |
+| crapper | `<skill-dir>/.venv/bin/crapper` | `<skill-dir>/.venv/Scripts/crapper.exe` |
+| dryer | `<skill-dir>/.venv/bin/dryer` | `<skill-dir>/.venv/Scripts/dryer.exe` |
+| mutator | `<skill-dir>/.venv/bin/mutator` | `<skill-dir>/.venv/Scripts/mutator.exe` |
+
+* The project needs its own `.venv` (or `venv`) with `pytest` and `coverage` installed.
+* If a tool is missing, tell the user to rerun `install.sh` or `install.ps1` from `<skill-dir>`.
+
 ## Fix Root Causes
 
 * Reproduce it.
@@ -107,17 +121,18 @@ Every time you are asked to make a change follow:
 
 ## Crapper
 
-* Use the crapper tool
-* Reduce each function under  CRAP 10 by splitting it, by testing it, or both.
+* Run `crapper --threshold 10` (exit 2 means a function is over the limit). Use `--changed` for git edits only.
+* Reduce each function under CRAP 10 by splitting it, by testing it, or both.
 * Consider whether case statements are worth reducing.
 
 ## Dryer
 
-* Use the dryer tool to eliminate duplication that rank 0.8 or above.
+* Run `dryer --threshold 0.8 <source-dir>`. The flag is required: the default is 0.82.
+* Eliminate every duplication it reports.
 
 ## Mutator
 
-* Use the mutator tool
+* Run `mutator <file>` on the file you changed, or `mutator --changed`. Exit 3 means a mutant survived.
 * Cover the uncovered.
 * Kill the survivors.
 * Delete dead code.
